@@ -39,6 +39,17 @@ get_config() {
 
 fetch_cmd=$(get_config "fetch_cmd" || echo "curl -sf")
 
+default_city="London,UK"
+
+get_city() {
+  info=$($fetch_cmd "ipinfo.io")
+  if [ -n "$info" ]; then
+    echo "$(jq -r '.city,",",.country' <<<"$info" | tr -d '\n' | sed 's/, null,/,/')"
+  else
+    echo "$default_city"
+  fi
+}
+
 
 
 ###[ Parse the command line ]##################################################
@@ -116,7 +127,7 @@ fi
 [ -z "$api_key" ] && api_key=$(get_config "api_key" || echo "85a4e3c55b73909f42c6a23ec35b7147")
 
 # Location : example "Moscow,RU"
-[ -z "$location" ] && location=$(get_config "location" || echo "Rzeszow,PL")
+[ -z "$location" ] && location=$(get_config "location" || get_city)
 
 # System of Units : "metric" or "imperial"
 [ -z "$units" ] && units=$(get_config "units" || echo "metric")
